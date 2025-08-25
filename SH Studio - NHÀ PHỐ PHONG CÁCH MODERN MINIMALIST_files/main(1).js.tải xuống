@@ -1,0 +1,365 @@
+jQuery(document).ready(function($) {
+    // Global flag to track validation state
+    window.phoneValidationFailed = false;
+    $('.menu-item a, a.menu-item').on('click', function(e) {
+        e.preventDefault();
+        var targetClass = $(this).attr('href').substring(1); // Get the target ID from href
+        var target = $('.' + targetClass + '.scrollto'); // Find the element with both the target class and 'scrollto'
+        if (target.length) {
+            $('html, body').animate({
+                scrollTop: target.offset().top - 100 // Scroll to the target section with 100px offset
+            }, 1000);
+        }
+    });
+
+    // Get the header height once when the page loads
+    var headerHeight = 500; // Fallback to 70 if header not found
+    console.log('Header height:', headerHeight);
+    
+    $('.menu-item a[href^="#"], a.menu-item[href^="#"]').on('click', function(e) {
+        var targetID = $(this).attr('href');
+        //console.log('Clicked link with target:', targetID);
+        
+        var target = $(targetID);
+        //console.log('Target element found:', target.length > 0);
+        
+        if (target.length) {
+            e.preventDefault();
+            
+            // Listen for menu close event (Magnific Popup)
+            $(document).one('mfpClose', function() {
+                // Scroll after menu is closed
+                var targetPosition = target.offset().top;
+                var scrollPosition = targetPosition + headerHeight;
+                //console.log('Target position:', targetPosition);
+                //console.log('Scroll position:', scrollPosition);
+                $('html, body').animate({
+                    scrollTop: scrollPosition
+                }, 600, function() {
+                    // Update URL hash after scroll completes
+                    window.location.hash = targetID;
+                    //console.log('Scroll animation completed');
+                });
+            });
+
+            // Trigger close on the real close button
+            $('.mfp-close').trigger('click');
+        } else {
+            //console.log('Target element not found');
+        }
+    });
+
+    // Prevent default behavior of mobile menu close button
+    $('.mobile-menu-close').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    
+
+    // Intercept Contact Form 7 AJAX submission
+    $(document).on('wpcf7beforesubmit', function(event) {
+        console.log('wpcf7beforesubmit triggered');
+        
+        // Check global flag first
+        if (window.phoneValidationFailed) {
+            console.log('Global validation flag is set in wpcf7beforesubmit - preventing');
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+        }
+        
+        if (event.detail.contactFormId === '8') {
+            var formData = event.detail.inputs;
+            var phone = formData.find(input => input.name === 'your-phone')?.value;
+
+            console.log('Phone number found:', phone);
+            
+            // Check if phone number doesn't start with 0
+            if (phone && !phone.startsWith('0')) {
+                console.log('Invalid phone number detected - preventing submission');
+                alert('Số điện thoại phải bắt đầu bằng 0');
+                window.phoneValidationFailed = true;
+                
+                // Stop the AJAX submission
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                
+                                            // Reset the form state completely
+                            var form = $('form.wpcf7-form');
+                            form.removeClass('wpcf7-submitting');
+                            form.removeClass('wpcf7-submitting');
+                            
+                            // Remove processing state
+                            form.find('.processing').removeClass('processing');
+                            form.find('.wpcf7-spinner').hide();
+                            form.find('.wpcf7-spinner').css('display', 'none');
+                            
+                            // Reset submit button
+                            var submitBtn = form.find('input[type="submit"], button[type="submit"]');
+                            submitBtn.prop('disabled', false);
+                            submitBtn.removeClass('disabled');
+                            submitBtn.removeClass('has-spinner');
+                            
+                            // Re-enable all form elements immediately
+                            form.find('input, textarea, select').prop('disabled', false);
+                            
+                            // Focus on phone field
+                            $('input[name="your-phone"]').focus();
+                            
+                            // Reset flag after delay
+                            setTimeout(function() {
+                                window.phoneValidationFailed = false;
+                            }, 2000);
+                
+                return false;
+            }
+        }
+    });
+
+    // Completely disable form submission when validation fails
+    $(document).ready(function() {
+        // Wait a bit for Contact Form 7 to initialize
+        setTimeout(function() {
+            var form = $('form.wpcf7-form');
+            if (form.length) {
+                console.log('Found Contact Form 7 form, setting up aggressive prevention');
+                
+                // Remove ALL existing submit handlers
+                form.off('submit');
+                form.off('submit.wpcf7');
+                
+                // Add our own submit handler with highest priority
+                form.on('submit', function(event) {
+                    console.log('SUBMIT EVENT INTERCEPTED');
+                    
+                    // Check global flag first
+                    if (window.phoneValidationFailed) {
+                        console.log('Global validation flag is set - BLOCKING submission');
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        return false;
+                    }
+                    
+                    var formId = $(this).find('input[name="_wpcf7"]').val();
+                    if (formId === '8') {
+                        var phone = $(this).find('input[name="your-phone"]').val();
+                        console.log('Phone in submit handler:', phone);
+                        
+                        if (phone && !phone.startsWith('0')) {
+                            console.log('INVALID PHONE - BLOCKING SUBMISSION');
+                            alert('Số điện thoại phải bắt đầu bằng 0');
+                            window.phoneValidationFailed = true;
+                            
+                            // Completely disable the form
+                            var form = $(this);
+                            form.prop('disabled', true);
+                            form.find('input, textarea, select, button').prop('disabled', true);
+                            
+                            // Remove all classes that might trigger submission
+                            form.removeClass('wpcf7-submitting');
+                            form.find('.processing').removeClass('processing');
+                            form.find('.wpcf7-spinner').hide();
+                            form.find('.wpcf7-spinner').css('display', 'none');
+                            
+                            // Reset submit button
+                            var submitBtn = form.find('input[type="submit"], button[type="submit"]');
+                            submitBtn.prop('disabled', true);
+                            submitBtn.removeClass('disabled');
+                            submitBtn.removeClass('has-spinner');
+                            
+                            event.preventDefault();
+                            event.stopPropagation();
+                            event.stopImmediatePropagation();
+                            
+                            // Re-enable form after delay
+                            setTimeout(function() {
+                                window.phoneValidationFailed = false;
+                                form.prop('disabled', false);
+                                form.find('input, textarea, select, button').prop('disabled', false);
+                                form.find('input[name="your-phone"]').focus();
+                            }, 3000);
+                            
+                            return false;
+                        }
+                    }
+                    
+                    // If validation passes, allow submission
+                    console.log('Validation passed, allowing submission');
+                });
+            }
+        }, 1000);
+        
+        // Also try to override Contact Form 7's internal functions
+        setTimeout(function() {
+            if (window.wpcf7 && window.wpcf7.api) {
+                console.log('Attempting to override Contact Form 7 API');
+                
+                // Store original function
+                var originalSubmit = window.wpcf7.api.submit;
+                
+                // Override the submit function
+                window.wpcf7.api.submit = function(form, options) {
+                    console.log('Contact Form 7 API submit intercepted');
+                    
+                    // Check global flag
+                    if (window.phoneValidationFailed) {
+                        console.log('Global validation flag is set in API - preventing submission');
+                        return false;
+                    }
+                    
+                    // Check phone validation
+                    var phone = form.find('input[name="your-phone"]').val();
+                    if (phone && !phone.startsWith('0')) {
+                        console.log('Invalid phone in API - preventing submission');
+                        alert('Số điện thoại phải bắt đầu bằng 0');
+                        window.phoneValidationFailed = true;
+                        
+                        // Reset form state
+                        form.removeClass('wpcf7-submitting');
+                        form.find('.processing').removeClass('processing');
+                        form.find('.wpcf7-spinner').hide();
+                        
+                        // Reset flag after delay
+                        setTimeout(function() {
+                            window.phoneValidationFailed = false;
+                        }, 3000);
+                        
+                        return false;
+                    }
+                    
+                    // Call original function if validation passes
+                    return originalSubmit.call(this, form, options);
+                };
+            }
+        }, 2000);
+    });
+
+    // Intercept jQuery AJAX calls made by Contact Form 7
+    $(document).ajaxSend(function(event, xhr, settings) {
+        console.log('AJAX request detected:', settings.url);
+        
+        // Check global flag first
+        if (window.phoneValidationFailed) {
+            console.log('Global validation flag is set in AJAX - aborting request');
+            xhr.abort();
+            return false;
+        }
+        
+        // Check if this is a Contact Form 7 submission
+        if (settings.url && settings.url.includes('wp-json/contact-form-7/')) {
+            console.log('Contact Form 7 AJAX detected');
+            
+            // Get the form data
+            var formData = settings.data;
+            console.log('Form data:', formData);
+            
+            // Check if this is form ID 8
+            if (formData && formData.includes('_wpcf7=8')) {
+                console.log('Form ID 8 detected in AJAX');
+                
+                // Extract phone number from form data
+                var phoneMatch = formData.match(/your-phone=([^&]*)/);
+                if (phoneMatch) {
+                    var phone = decodeURIComponent(phoneMatch[1]);
+                    console.log('Phone from AJAX data:', phone);
+                    
+                    // Check if phone number doesn't start with 0
+                    if (phone && !phone.startsWith('0')) {
+                        console.log('Invalid phone in AJAX - aborting request');
+                        alert('Số điện thoại phải bắt đầu bằng 0');
+                        window.phoneValidationFailed = true;
+                        
+                        // Abort the AJAX request
+                        xhr.abort();
+                        
+                        // Reset the form state completely
+                        var form = $('form.wpcf7-form');
+                        form.removeClass('wpcf7-submitting');
+                        form.find('.processing').removeClass('processing');
+                        form.find('.wpcf7-spinner').hide();
+                        form.find('.wpcf7-spinner').css('display', 'none');
+                        
+                        // Reset submit button
+                        var submitBtn = form.find('input[type="submit"], button[type="submit"]');
+                        submitBtn.prop('disabled', false);
+                        submitBtn.removeClass('disabled');
+                        submitBtn.removeClass('has-spinner');
+                        
+                        // Re-enable all form elements immediately
+                        form.find('input, textarea, select').prop('disabled', false);
+                        
+                        // Focus on phone field
+                        $('input[name="your-phone"]').focus();
+                        
+                        // Reset flag after delay
+                        setTimeout(function() {
+                            window.phoneValidationFailed = false;
+                        }, 3000);
+                        
+                        return false;
+                    }
+                }
+            }
+        }
+    });
+
+    // Backup validation on form submit
+    $(document).on('submit', 'form.wpcf7-form', function(event) {
+        console.log('Form submit triggered');
+        
+        var formId = $(this).find('input[name="_wpcf7"]').val();
+        if (formId === '8') {
+            var phone = $(this).find('input[name="your-phone"]').val();
+            
+            if (phone && !phone.startsWith('0')) {
+                console.log('Invalid phone in submit event - preventing');
+                alert('Số điện thoại phải bắt đầu bằng 0');
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                $(this).find('input[name="your-phone"]').focus();
+                return false;
+            }
+        }
+    });
+
+    // If form somehow gets submitted, catch it and reset
+    $(document).on('wpcf7mailsent', function(event) {
+        if (event.detail.contactFormId === '8') {
+            var formData = event.detail.inputs;
+            var phone = formData.find(input => input.name === 'your-phone')?.value;
+            
+            if (phone && !phone.startsWith('0')) {
+                console.log('Invalid phone detected after submission - resetting form');
+                alert('Số điện thoại phải bắt đầu bằng 0 - Form đã được reset');
+                
+                // Reset the form
+                var form = $('form.wpcf7-form');
+                form[0].reset();
+                form.removeClass('wpcf7-submitting');
+                form.find('.wpcf7-spinner').hide();
+                form.find('input[type="submit"]').prop('disabled', false);
+                
+                return false;
+            }
+        }
+    });
+
+    $(document).on('wpcf7submit', function(event) {
+        if (event.detail.status === 'mail_sent') {
+            if (event.detail.contactFormId === '8') {
+                var formData = event.detail.inputs;
+                var phone = formData.find(input => input.name === 'your-phone')?.value;
+
+            // Format phone (Vietnam example)
+            if (phone) {
+                phone = phone.replace(/^0/, '+84');
+                alert(phone); // Ensure alert is shown after phone formatting
+            }
+        }
+    }
+});
+});
