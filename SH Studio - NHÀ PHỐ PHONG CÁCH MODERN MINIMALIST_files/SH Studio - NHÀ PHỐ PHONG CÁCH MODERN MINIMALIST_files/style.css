@@ -1,0 +1,166 @@
+/*
+Theme Name: viethomes79
+Description: This is a child theme for Flatsome Theme
+Author: UX Themes
+Template: flatsome
+Version: 3.0
+*/
+
+/*************** ADD CUSTOM CSS HERE.   ***************/
+
+.section.thietke .box .box-image img {
+    border-radius: 10px 10px 0 0;
+}
+.section.lienhe h3 {
+    margin: 0;
+    color: #f99700;
+    font-size: 1.7em;
+}
+.footer.footer-1 {
+    position: fixed;
+    bottom: 100px;
+    right: 0;
+    background-color: #fff;
+    width: 60px;
+    z-index: 1000;
+    padding: 10px;
+    box-shadow: 0 8px 10px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #e0e0e0;
+    border-radius: 10px 0 0 10px;
+}
+.footer.footer-1 .col {
+    flex-basis: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+.footer.footer-1 .col a.button {
+    margin: 0;
+    padding: 20px 0;
+    border-radius: 0;
+    width: 50px;
+    height: 50px;
+}
+.footer.footer-1 .col a.button.mess-btn {
+    background: url(images/mess.png) no-repeat center center;
+    background-size: contain;
+    border: none;
+    border-radius: 0;
+    width: 100%;
+}
+.footer.footer-1 .col a.button.phone-btn {
+    background: url(images/hotline.png) no-repeat center center;
+    background-size: contain;
+    border: none;
+    border-radius: 0;
+    width: 100%; 
+    animation: tada 1s infinite;
+}
+@keyframes tada {
+    from {
+        transform: scale3d(1, 1, 1);
+    }
+    10%, 20% {
+        transform: scale3d(0.9, 0.9, 0.9) rotate(-3deg);
+    }
+    30%, 50%, 70%, 90% {
+        transform: scale3d(1.1, 1.1, 1.1) rotate(3deg);
+    }
+    40%, 60%, 80% {
+        transform: scale3d(1.1, 1.1, 1.1) rotate(-3deg);
+    }
+    to {
+        transform: scale3d(1, 1, 1);
+    }
+}
+.tada-animation {
+    animation: tada 1s infinite;
+}
+.footer.footer-1 .col a.button.zalo-btn {
+    background: url(images/zalo.png) no-repeat center center;
+    background-size: contain;
+    border: none;
+    border-radius: 0;
+    width: 100%;
+}
+
+.slide-image-thicong .flickity-slider>div:not(.col).img,
+.slide-image-duannoibat .flickity-slider>div:not(.col).img {
+    width: 33.33% !important;
+    padding: 0 10px !important;
+}
+.banner-home {
+    min-height: auto;
+}
+.banner-home .banner-layers.container {
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0;
+    width: 100%;
+    max-width: unset
+}
+.banner-home .fill {
+    position: static;
+}
+.banner-home .img {
+    position: static !important;
+}
+.slide-image-duannoibat .flickity-page-dots,
+.slide-image-thicong .flickity-page-dots {
+    bottom: -35px;
+}
+.absolute-footer {
+    display: none;
+}
+
+@media only screen and (max-width: 48em) {
+/*************** ADD MOBILE ONLY CSS HERE  ***************/
+    .flickity-slider .col {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .flickity-page-dots {
+        bottom: 0;
+    }
+    .testi-slider .flickity-slider .col {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .section.thicong .flickity-slider .box-text-inner h4 {
+        font-size: 1.2em;
+    }
+    .section.thicong a.button.secondary.menu-item {
+        margin-top: 15px;
+    }
+    .thicong-slide-mobile .flickity-viewport,
+    .slide-image-thicong .flickity-viewport,
+    .slide-image-duannoibat .flickity-viewport {
+        overflow: visible;
+    }
+    .thicong-slide-mobile .flickity-slider .row .col-inner {
+        width: 90% !important;
+    }
+    .thicong-slide-mobile .flickity-slider>.row:not(.is-selected) {
+        opacity: 1;
+    }
+    .slide-image-thicong .flickity-slider>div:not(.col).img,
+    .slide-image-duannoibat .flickity-slider>div:not(.col).img {
+        width: 90% !important;
+        padding: 0 !important;
+    }
+    .slide-image-thicong .flickity-slider>div:not(.col).img .img-inner,
+    .slide-image-duannoibat .flickity-slider>div:not(.col).img .img-inner {
+        width: 96% !important;
+        display: block;
+        margin: 0 auto;
+    }
+    .thicong-slide-mobile .flickity-page-dots {
+        width: 90%;
+        left: 5%;
+        right: 5%;
+        bottom: 15px;
+    }
+    .slide-image-thicong .flickity-page-dots {
+        bottom: -40px;
+    }
+}
